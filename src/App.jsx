@@ -25,7 +25,13 @@ import {
   Instagram,
   Twitter,
   Ghost,
-  Video
+  Video,
+  Music,
+  ShoppingBag,
+  Mail,
+  Search,
+  Check,
+  FileText
 } from 'lucide-react';
 
 // --- Custom Styles ---
@@ -52,6 +58,14 @@ const styles = `
   }
   .animate-slide-down {
     animation: slide-down 0.4s ease-out forwards;
+  }
+
+  @keyframes scale-in {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .animate-scale-in {
+    animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
   
   /* Hide Scrollbar */
@@ -230,7 +244,7 @@ const HomePage = ({ navigateTo, showToast }) => (
       ))}
       
       <button 
-        onClick={() => showToast("Searching for new accounts...", "info")}
+        onClick={() => navigateTo('add_account')}
         className="w-full py-4 border-2 border-dashed border-gray-700 rounded-2xl text-gray-500 text-sm font-bold uppercase tracking-wider hover:border-gray-500 hover:text-gray-300 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
       >
         <Plus size={18} /> Add Account
@@ -238,6 +252,124 @@ const HomePage = ({ navigateTo, showToast }) => (
     </div>
   </div>
 );
+
+const AddAccountView = ({ onBack, showToast }) => {
+  const [selectedService, setSelectedService] = useState(null);
+  const [connecting, setConnecting] = useState(false);
+
+  const services = [
+    { name: "Spotify", icon: Music, color: "bg-green-500" },
+    { name: "Amazon", icon: ShoppingBag, color: "bg-orange-500" },
+    { name: "Gmail", icon: Mail, color: "bg-red-500" },
+    { name: "Netflix", icon: Video, color: "bg-red-600" },
+    { name: "Discord", icon: Ghost, color: "bg-indigo-500" },
+    { name: "Twitter", icon: Twitter, color: "bg-sky-500" },
+  ];
+
+  const handleConnect = () => {
+    setConnecting(true);
+    setTimeout(() => {
+      setConnecting(false);
+      showToast(`Successfully linked ${selectedService.name}`, "success");
+      setSelectedService(null);
+      setTimeout(onBack, 500);
+    }, 2000);
+  };
+
+  return (
+    <div className="animate-fade-in-up pb-32 h-full flex flex-col relative">
+      <div className="flex items-center gap-4 mb-6 pt-2">
+        <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors active:scale-90">
+          <ChevronLeft size={20} />
+        </button>
+        <h1 className="text-lg font-bold text-white">Add Account</h1>
+      </div>
+
+      <div className="relative mb-6">
+        <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+          <Search size={18} />
+        </div>
+        <input 
+          type="text" 
+          placeholder="Search services..." 
+          className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-colors"
+        />
+      </div>
+
+      <SectionTitle title="Popular Services" />
+
+      <div className="grid grid-cols-2 gap-3">
+        {services.map((service, i) => (
+          <GlassCard key={i} onClick={() => setSelectedService(service)} className="flex items-center gap-3 hover:bg-white/10 transition-colors cursor-pointer group">
+            <div className={`w-10 h-10 rounded-xl ${service.color} flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform`}>
+              <service.icon size={20} className="text-white" />
+            </div>
+            <span className="font-bold text-sm text-gray-200">{service.name}</span>
+          </GlassCard>
+        ))}
+      </div>
+
+      <div className="mt-8">
+        <SectionTitle title="Categories" />
+        <div className="space-y-2">
+           {["Social Media", "Finance", "Entertainment", "Shopping"].map((cat, i) => (
+             <div key={i} className="flex justify-between items-center p-4 rounded-xl bg-white/5 border border-white/5 text-sm text-gray-300">
+               <span>{cat}</span>
+               <ChevronLeft className="rotate-180 text-gray-600" size={16} />
+             </div>
+           ))}
+        </div>
+      </div>
+
+      {/* ToS Modal */}
+      {selectedService && (
+        <div className="absolute inset-0 z-50 flex items-end sm:items-center justify-center bg-black/80 backdrop-blur-md animate-fade-in-up">
+          <div className="bg-[#1a1a1a] w-full sm:w-[90%] sm:rounded-3xl rounded-t-3xl border border-gray-700 overflow-hidden shadow-2xl relative animate-scale-in">
+             <div className="h-1 w-12 bg-gray-600 rounded-full mx-auto mt-3 mb-6"></div>
+             
+             <div className="px-6 pb-8">
+               <div className="flex flex-col items-center gap-4 mb-6">
+                  <div className={`w-16 h-16 rounded-2xl ${selectedService.color} flex items-center justify-center shadow-[0_0_30px_rgba(0,0,0,0.5)]`}>
+                    <selectedService.icon size={32} className="text-white" />
+                  </div>
+                  <div className="text-center">
+                    <h2 className="text-xl font-bold text-white">Connect {selectedService.name}</h2>
+                    <p className="text-xs text-gray-400 mt-1">Version 4.2 • Verified Safe</p>
+                  </div>
+               </div>
+               
+               <div className="bg-black/40 rounded-xl p-4 border border-white/5 mb-6 text-sm text-gray-300 leading-relaxed max-h-48 overflow-y-auto custom-scrollbar">
+                 <div className="flex items-center gap-2 mb-3 text-white font-bold text-xs uppercase tracking-wider">
+                   <FileText size={14} className="text-blue-400" /> Terms of Service
+                 </div>
+                 <p className="mb-4 text-xs opacity-80">
+                   By connecting your {selectedService.name} account, you grant Aura permission to:
+                 </p>
+                 <ul className="space-y-2 mb-4 text-xs">
+                   <li className="flex gap-2"><Check size={14} className="text-green-500 shrink-0" /> Scan activity logs for suspicious logins</li>
+                   <li className="flex gap-2"><Check size={14} className="text-green-500 shrink-0" /> Monitor third-party app permissions</li>
+                   <li className="flex gap-2"><Check size={14} className="text-green-500 shrink-0" /> Cross-reference email with known breaches</li>
+                 </ul>
+                 <p className="text-[10px] text-gray-500 mt-4">
+                   Aura does not store your passwords. All scanning is performed locally or via encrypted tokens.
+                 </p>
+               </div>
+
+               <div className="flex flex-col gap-3">
+                 <GlowingButton variant="primary" onClick={handleConnect} loading={connecting}>
+                   {connecting ? "Connecting..." : "Agree & Connect"}
+                 </GlowingButton>
+                 <GlowingButton variant="ghost" onClick={() => !connecting && setSelectedService(null)}>
+                   Cancel
+                 </GlowingButton>
+               </div>
+             </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const AlertsPage = ({ showToast }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -556,7 +688,7 @@ const AccountDetailView = ({ onBack, showToast }) => {
 export default function PhoneEmulator() {
   const [view, setView] = useState('lockscreen'); 
   const [activeTab, setActiveTab] = useState('HOME');
-  const [navStack, setNavStack] = useState('main'); 
+  const [navStack, setNavStack] = useState('main'); // 'main', 'account_detail', 'add_account'
   const [currentTime, setCurrentTime] = useState('09:41');
   const [notification, setNotification] = useState(null);
 
@@ -703,6 +835,8 @@ export default function PhoneEmulator() {
             <div className="flex-1 overflow-y-auto no-scrollbar pt-14 px-4 relative z-10">
               {navStack === 'account_detail' ? (
                 <AccountDetailView onBack={() => setNavStack('main')} showToast={showToast} />
+              ) : navStack === 'add_account' ? (
+                <AddAccountView onBack={() => setNavStack('main')} showToast={showToast} />
               ) : (
                 <>
                   {activeTab === 'HOME' && <HomePage navigateTo={setNavStack} showToast={showToast} />}
