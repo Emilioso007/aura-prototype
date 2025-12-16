@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Battery, 
   Wifi, 
@@ -277,7 +277,7 @@ const AddAccountView = ({ onBack, showToast }) => {
   };
 
   return (
-    <div className="animate-fade-in-up pb-32 h-full flex flex-col relative">
+    <div className="animate-fade-in-up pb-32 min-h-full flex flex-col relative">
       <div className="flex items-center gap-4 mb-6 pt-2">
         <button onClick={onBack} className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors active:scale-90">
           <ChevronLeft size={20} />
@@ -691,6 +691,7 @@ export default function PhoneEmulator() {
   const [navStack, setNavStack] = useState('main'); // 'main', 'account_detail', 'add_account'
   const [currentTime, setCurrentTime] = useState('09:41');
   const [notification, setNotification] = useState(null);
+  const contentRef = useRef(null);
 
   // Clock
   useEffect(() => {
@@ -700,6 +701,13 @@ export default function PhoneEmulator() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Scroll to top on view change
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [activeTab, navStack]);
 
   const showToast = (message, type) => {
     setNotification({ message, type });
@@ -832,7 +840,10 @@ export default function PhoneEmulator() {
             </div>
 
             {/* Main Content Area */}
-            <div className="flex-1 overflow-y-auto no-scrollbar pt-14 px-4 relative z-10">
+            <div 
+              ref={contentRef}
+              className="flex-1 overflow-y-auto no-scrollbar pt-14 px-4 relative z-10"
+            >
               {navStack === 'account_detail' ? (
                 <AccountDetailView onBack={() => setNavStack('main')} showToast={showToast} />
               ) : navStack === 'add_account' ? (
